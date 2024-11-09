@@ -380,7 +380,10 @@ class BaseMultivariate(BaseModel):
             )
             loss = self.loss(y=outsample_y, distr_args=distr_args, mask=outsample_mask)
         else:
-            loss = self.loss(y=outsample_y, y_hat=output, mask=outsample_mask)
+            y_hat, _, _ = self._inv_normalization(
+                y_hat=output, temporal_cols=batch["temporal_cols"], y_idx=y_idx
+            )
+            loss = self.loss(y=outsample_y, y_hat=y_hat, mask=outsample_mask)
 
         if torch.isnan(loss):
             print("Model Parameters", self.hparams)
@@ -449,8 +452,11 @@ class BaseMultivariate(BaseModel):
                 y=outsample_y, distr_args=distr_args, mask=outsample_mask
             )
         else:
+            y_hat, _, _ = self._inv_normalization(
+                y_hat=output, temporal_cols=batch["temporal_cols"], y_idx=y_idx
+            )
             valid_loss = self.valid_loss(
-                y=outsample_y, y_hat=output, mask=outsample_mask
+                y=outsample_y, y_hat=y_hat, mask=outsample_mask
             )
 
         if torch.isnan(valid_loss):
